@@ -10,6 +10,10 @@ repositories {
 }
 
 dependencies {
+    implementation 'javazoom:jlayer:1.0.1'
+    implementation 'org.jflac:jflac-codec:1.5.2'
+    implementation 'com.googlecode.soundlibs:mp3spi:1.9.5.4'
+
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
 }

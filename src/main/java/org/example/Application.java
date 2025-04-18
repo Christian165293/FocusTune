@@ -15,6 +15,7 @@ public class Application {
         musicRatings = musicRatingsInput;
         audioPlayer = new AudioPlayer(musicQueue, musicRatings); // Initialize after fields are set
     }
+
     public void run() {
         try {
             audioPlayer.loadAudio();
@@ -32,7 +33,7 @@ public class Application {
                     case "D" -> {
                         musicRatings.dislikeSong(musicQueue.peek());
                         musicQueue.remove();
-                        if(musicQueue.isEmpty()){
+                        if (musicQueue.isEmpty()) {
                             System.out.println("\nyour playlist is empty please reset program to get more songs");
                             System.exit(0);
                         }
@@ -43,7 +44,7 @@ public class Application {
                         audioPlayer.enableLoop();
                         System.out.println("loop enabled");
                     }
-                    case "DL" ->{
+                    case "DL" -> {
                         audioPlayer.disableLoop();
                         System.out.println("loop enabled");
                     }
@@ -55,8 +56,8 @@ public class Application {
                 }
             }
         } catch (UnsupportedAudioFileException e) {
-            userInterface.displayMessage("Audio file is not supported");
-            userInterface.displayMessage("Please input a .wav audio file");
+            userInterface.displayMessage("the Audio file " + musicQueue.peek() + " is not supported");
+            userInterface.displayMessage("Please input a .mp3 audio file");
         } catch (LineUnavailableException e) {
             userInterface.displayMessage("Unable to access audio resource");
         } catch (IOException e) {

@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 public class InitializePlaylist {
     public static void fillMusicQueue(MusicQueue musicQueueInput, MusicRatings musicRatingsInput) {
         Path projectRoot = Paths.get(System.getProperty("user.dir"));
-        Path folderPath = projectRoot.resolve("src/InputWavFilesHere");
+        Path folderPath = projectRoot.resolve("src/InputMP3FilesHere");
 
         try (Stream<Path> paths = Files.list(folderPath)) {
             paths.filter(Files::isRegularFile)

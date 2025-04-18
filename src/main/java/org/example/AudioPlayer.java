@@ -1,5 +1,7 @@
 package org.example;
 
+import javazoom.spi.mpeg.sampled.file.MpegAudioFileReader;
+
 import javax.sound.sampled.*;
 import java.io.File;
 import java.io.IOException;
@@ -38,9 +40,19 @@ public class AudioPlayer {
             IOException,
             LineUnavailableException {
         File file = new File(musicQueue.peek());
-        AudioInputStream audioStream = AudioSystem.getAudioInputStream(file);
+        AudioInputStream audioStream = new MpegAudioFileReader().getAudioInputStream(file);
+        AudioFormat baseFormat = audioStream.getFormat();
+        AudioFormat decodedFormat = new AudioFormat(
+                AudioFormat.Encoding.PCM_SIGNED,//PCM_SIGNED encoding (standard for WAVs and Java Sound).
+                baseFormat.getSampleRate(),
+                16,//16-bit depth (CD-quality resolution).
+                baseFormat.getChannels(),
+                baseFormat.getChannels() * 2,//Correct frame size (2 bytes per sample for 16-bit audio).
+                baseFormat.getSampleRate(),
+                false);//prioritize low value byes first
+        AudioInputStream decodedStream = AudioSystem.getAudioInputStream(decodedFormat, audioStream);
         clip = AudioSystem.getClip();
-        clip.open(audioStream);
+        clip.open(decodedStream);
         endSongListener();
     }
 
@@ -69,12 +81,12 @@ public class AudioPlayer {
         }
     }
 
-    public void nextSong() throws UnsupportedAudioFileException, LineUnavailableException, IOException{
+    public void nextSong() throws UnsupportedAudioFileException, LineUnavailableException, IOException {
         do {
             stop();
             clip.removeLineListener(endListener);
             close();
-            if(!loopEnabled) {
+            if (!loopEnabled) {
                 musicQueue.add(musicQueue.peek()); // Re-add current song to queue
                 musicQueue.remove(); // Move to next song
             }
