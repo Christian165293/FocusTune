@@ -31,6 +31,11 @@ public class Application {
                     case "N" -> audioPlayer.nextSong();
                     case "D" -> {
                         musicRatings.dislikeSong(musicQueue.peek());
+                        musicQueue.remove();
+                        if(musicQueue.isEmpty()){
+                            System.out.println("\nyour playlist is empty please reset program to get more songs");
+                            System.exit(0);
+                        }
                         audioPlayer.nextSong();
                     }
                     case "R" -> audioPlayer.reset();
