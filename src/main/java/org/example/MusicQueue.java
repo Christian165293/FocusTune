@@ -1,0 +1,46 @@
+package org.example;
+
+public class MusicQueue {
+    private static class Node {
+        private final String data; // Value stored in the node
+        private Node next; // Pointer to the next node
+
+        // Constructor initializes the node with data
+        private Node(String data) {
+            this.data = data;
+        }
+    }
+
+    private Node head; // Pointer to the front of the queue
+    private Node tail; // Pointer to the back of the queue
+
+    // Method to check if the queue is empty
+    public boolean isEmpty() {
+        return (head == null);
+    }
+
+    // Method to return the front element of the queue
+    public String peek() {
+        return head.data;
+    }
+
+    // Method to add an element to the back of the queue
+    public void add(String data) {
+        Node node = new Node(data);
+        if (tail != null) {
+            tail.next = node;
+        }
+        tail = node;
+        if (head == null) {
+            head = node;
+        }
+    }
+
+    // Method to remove and return the front element of the queue
+    public void remove() {
+        head = head.next;
+        if (head == null) {
+            tail = null;
+        }
+    }
+}
