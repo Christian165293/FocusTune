@@ -13,6 +13,7 @@ public class MusicQueue {
 
     private Node head; // Pointer to the front of the queue
     private Node tail; // Pointer to the back of the queue
+    private int size;
 
     // Method to check if the queue is empty
     public boolean isEmpty() {
@@ -34,6 +35,7 @@ public class MusicQueue {
         if (head == null) {
             head = node;
         }
+        size++;
     }
 
     // Method to remove and return the front element of the queue
@@ -42,5 +44,10 @@ public class MusicQueue {
         if (head == null) {
             tail = null;
         }
+        size--;
+    }
+
+    public int getSize() {
+        return size;
     }
 }

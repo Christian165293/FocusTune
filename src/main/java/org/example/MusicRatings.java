@@ -13,8 +13,23 @@ public class MusicRatings {
         ratings.replace(fullPathInput, false);
     }
 
+    public boolean checkForLikedRatings(){
+        for (Boolean value : ratings.values()) {
+            if (value) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean getSongStatus(String fullPathInput) {
         Boolean status = ratings.get(fullPathInput);
         return status != null ? status : true; // Default to "liked" if not found
+    }
+
+    public void resetAllRatings() {
+        for (String key : ratings.keySet()) {
+            ratings.replace(key, true);
+        }
     }
 }
