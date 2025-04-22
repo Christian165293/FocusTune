@@ -1,20 +1,23 @@
 package org.example;
 
 public class Application {
-    private final AudioPlayer audioPlayer;
-    private final UserControls controls;
+    private final UserControls userControls;
 
-    public Application(MusicQueue musicQueue, MusicRatings musicRatings) {
-        this.audioPlayer = new AudioPlayer(musicQueue, musicRatings);
-        this.controls = new UserControls(audioPlayer);
+    public Application(AudioPlaybackController playbackController,
+                       SongQueueNavigator queueNavigator,
+                       LoopManager loopManager,
+                       AlarmPlayer alarmPlayer,
+                       MusicRatings musicRatings) {
+        this.userControls = new UserControls(
+                playbackController,
+                queueNavigator,
+                loopManager,
+                alarmPlayer,
+                musicRatings
+        );
     }
 
     public void run() {
-        try {
-            audioPlayer.loadAudio();
-            controls.setVisible(true);
-        } catch (Exception e) {
-            System.err.println("Error initializing player: " + e.getMessage());
-        }
+        userControls.setVisible(true);
     }
 }

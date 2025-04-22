@@ -3,17 +3,42 @@ package org.example;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 
-public class UserControls extends JFrame{
-    private final AudioPlayer audioPlayer;
+public class UserControls extends JFrame {
+    private final AudioPlaybackController playbackController;
+    private final SongQueueNavigator queueNavigator;
+    private final LoopManager loopManager;
+    private final AlarmPlayer alarmPlayer;
+    private final MusicRatings musicRatings;
+    private final TimerService timerService;
+    private final PlayerStateManager stateManager;
     private final UserInterface ui;
-    private javax.swing.Timer timer;
-    private int remainingSeconds;
-    private boolean isPlaying = false;
-    private boolean isTimerRunning = false;
 
-    public UserControls(AudioPlayer audioPlayer) {
+    public UserControls(AudioPlaybackController playbackController,
+                        SongQueueNavigator queueNavigator,
+                        LoopManager loopManager,
+                        AlarmPlayer alarmPlayer,
+                        MusicRatings musicRatings) {
         super("Music Player Controls");
-        this.audioPlayer = audioPlayer;
+        this.playbackController = playbackController;
+        this.queueNavigator = queueNavigator;
+        this.loopManager = loopManager;
+        this.alarmPlayer = alarmPlayer;
+        this.musicRatings = musicRatings;
+        this.stateManager = new PlayerStateManager();
+
+        // Initialize TimerService with listeners
+        this.timerService = new TimerService(new TimerService.TimerListener() {
+            @Override
+            public void onTimerTick(int remainingSeconds) {
+                ui.getTimerLabel().setText(formatTime(remainingSeconds));
+            }
+
+            @Override
+            public void onTimerComplete() {
+                handleTimerCompletion();
+            }
+        });
+
         this.ui = new UserInterface(this);
         setupEventListeners();
     }
@@ -25,123 +50,113 @@ public class UserControls extends JFrame{
         ui.getDislikeButton().addActionListener(this::handleDislike);
         ui.getNextButton().addActionListener(this::handleNext);
         ui.getResetButton().addActionListener(this::handleReset);
+        ui.getQuitButton().addActionListener(this::handleQuit);
     }
 
     private void handlePlayPause(ActionEvent e) {
-        if (isPlaying) {
-            audioPlayer.stopPlayback();
+        if (stateManager.isPlaying()) {
+            playbackController.stopPlayback();
             ui.getPlayPauseButton().setText("Play Music");
         } else {
-            audioPlayer.startPlayback();
+            playbackController.startPlayback();
             ui.getPlayPauseButton().setText("Pause Music");
         }
-        isPlaying = !isPlaying;
+        stateManager.setPlaying(!stateManager.isPlaying());
     }
 
     private void handleTimerToggle(ActionEvent e) {
-        if (!isTimerRunning) {
+        if (!timerService.isRunning()) {
             try {
                 int minutes = Integer.parseInt(ui.getTimeInput().getText());
-                remainingSeconds = minutes * 60;
-                ui.getTimerLabel().setText(formatTime(remainingSeconds));
-
-                if (timer != null) {
-                    timer.stop();
-                }
-
-                timer = new javax.swing.Timer(1000, _ -> {
-                    remainingSeconds--;
-                    if (remainingSeconds >= 0) {
-                        ui.getTimerLabel().setText(formatTime(remainingSeconds));
-                    }
-                    if (remainingSeconds <= 0) {
-                        ui.getTimerLabel().setText("00:00");
-                        timer.stop();
-                        isTimerRunning = false;
-                        ui.getTimerLabel().setText("Time's up!");
-                        ui.getTimerToggleButton().setText("Start Timer");
-                        audioPlayer.stopPlayback();
-                        audioPlayer.playAlarm();
-                        if (isPlaying) {
-                            isPlaying = false;
-                            ui.getPlayPauseButton().setText("Play Music");
-                        }
-                    }
-                });
-                timer.start();
-                isTimerRunning = true;
+                timerService.startTimer(minutes);
                 ui.getTimerToggleButton().setText("Stop Timer");
             } catch (NumberFormatException ex) {
                 ui.getTimerLabel().setText("Invalid input!");
             }
         } else {
-            if (timer != null) {
-                timer.stop();
-            }
-            isTimerRunning = false;
+            timerService.stopTimer();
             ui.getTimerToggleButton().setText("Start Timer");
             ui.getTimerLabel().setText("Timer Stopped");
         }
     }
 
     private void handleLoop(ActionEvent e) {
-        if (audioPlayer.isLoopEnabled()) {
-            audioPlayer.disableLoop();
+        if (loopManager.isLoopEnabled()) {
+            loopManager.disableLoop();
             ui.getLoopButton().setText("Loop Music");
         } else {
-            audioPlayer.enableLoop();
+            loopManager.enableLoop();
             ui.getLoopButton().setText("Undo Loop");
         }
     }
 
     private void handleDislike(ActionEvent e) {
-        String currentSong = audioPlayer.getCurrentSong();
+        String currentSong = queueNavigator.getCurrentSong();
         if (currentSong != null) {
-            audioPlayer.dislikeCurrentSong();
+            musicRatings.dislikeSong(currentSong);
             ui.getDislikeButton().setText("Disliked!");
 
-            // Check if we need to reset ratings
-            if (!audioPlayer.checkIfRatingsFalse()) {
-                audioPlayer.getMusicRatings().resetAllRatings();
+            if (musicRatings.checkForLikedRatings()) {
+                musicRatings.resetAllRatings();
                 ui.getTimerLabel().setText("Reset disliked songs");
+
                 Timer messageTimer = new Timer(2000, _ -> {
                     try {
-                        audioPlayer.nextSong();
+                        playNextSong();
                         ui.getTimerLabel().setText("Playing next song");
                     } catch (Exception ex) {
-                        System.err.println("Error moving to next song: " + ex.getMessage());
+                        showError("Error moving to next song: " + ex.getMessage());
                     }
                 });
                 messageTimer.setRepeats(false);
                 messageTimer.start();
             } else {
-                try {
-                    audioPlayer.nextSong();
-                } catch (Exception ex) {
-                    System.err.println("Error moving to next song: " + ex.getMessage());
-                }
+                playNextSong();
             }
 
-            // Reset dislike button text after 2 seconds
             new Timer(2000, _ -> ui.getDislikeButton().setText("Dislike Song")).start();
         }
     }
 
     private void handleNext(ActionEvent e) {
+        playNextSong();
+    }
+
+    private void playNextSong() {
         try {
-            audioPlayer.nextSong();
-            if (isPlaying) {
+            queueNavigator.moveToNextSong();
+            playbackController.loadAudio(queueNavigator.getCurrentSong());
+            if (stateManager.isPlaying()) {
+                playbackController.startPlayback();
                 ui.getPlayPauseButton().setText("Pause Music");
             }
         } catch (Exception ex) {
-            System.err.println("Error moving to next song: " + ex.getMessage());
+            showError("Error moving to next song: " + ex.getMessage());
         }
     }
 
     private void handleReset(ActionEvent e) {
-        audioPlayer.reset();
-        if (isPlaying) {
-            audioPlayer.startPlayback();
+        playbackController.reset();
+        if (stateManager.isPlaying()) {
+            playbackController.startPlayback();
+        }
+    }
+
+    private void handleQuit(ActionEvent e) {
+        playbackController.close();
+        dispose();
+        System.exit(0);
+    }
+
+    private void handleTimerCompletion() {
+        ui.getTimerLabel().setText("Time's up!");
+        ui.getTimerToggleButton().setText("Start Timer");
+        playbackController.stopPlayback();
+        alarmPlayer.playAlarm();
+
+        if (stateManager.isPlaying()) {
+            stateManager.setPlaying(false);
+            ui.getPlayPauseButton().setText("Play Music");
         }
     }
 
@@ -149,5 +164,10 @@ public class UserControls extends JFrame{
         int minutes = totalSeconds / 60;
         int seconds = totalSeconds % 60;
         return String.format("%02d:%02d", minutes, seconds);
+    }
+
+    private void showError(String message) {
+        System.err.println(message);
+        ui.getTimerLabel().setText(message);
     }
 }

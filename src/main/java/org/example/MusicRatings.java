@@ -13,13 +13,13 @@ public class MusicRatings {
         ratings.replace(fullPathInput, false);
     }
 
-    public boolean checkForLikedRatings(){
+    public boolean checkForLikedRatings() {
         for (Boolean value : ratings.values()) {
             if (value) {
-                return true;
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     public boolean getSongStatus(String fullPathInput) {
