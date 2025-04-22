@@ -1,68 +1,55 @@
 package org.example;
 
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
-
 class MusicRatingsTest {
     private MusicRatings ratings;
+    private final String TEST_SONG = "test_song.mp3";
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         ratings = new MusicRatings();
     }
 
     @Test
-    public void testAddFile() {
-        ratings.addFileToHashMap("song1.mp3");
-        assertTrue(ratings.getSongStatus("song1.mp3"));
+    void addFileToHashMap_shouldAddSongWithDefaultLikedStatus() {
+        ratings.addFileToHashMap(TEST_SONG);
+        assertTrue(ratings.getSongStatus(TEST_SONG));
     }
 
     @Test
-    public void testDislikeSong() {
-        ratings.addFileToHashMap("song1.mp3");
-        ratings.dislikeSong("song1.mp3");
-        assertFalse(ratings.getSongStatus("song1.mp3"));
+    void dislikeSong_shouldChangeStatusToDisliked() {
+        ratings.addFileToHashMap(TEST_SONG);
+        ratings.dislikeSong(TEST_SONG);
+        assertFalse(ratings.getSongStatus(TEST_SONG));
     }
 
     @Test
-    public void testNonExistentSongDefaultsToLiked() {
-        assertTrue(ratings.getSongStatus("nonexistent.mp3"));
-    }
-
-    @Test
-    public void testCheckForLikedRatings_AllLiked() {
-        ratings.addFileToHashMap("song1.mp3");
-        ratings.addFileToHashMap("song2.mp3");
-
-        // If no songs are disliked, should return true (all songs are liked)
+    void checkForLikedRatings_shouldReturnFalseWhenAllLiked() {
+        ratings.addFileToHashMap(TEST_SONG);
         assertFalse(ratings.checkForLikedRatings());
     }
 
     @Test
-    public void testCheckForLikedRatings_NoneLiked() {
-        ratings.addFileToHashMap("song1.mp3");
-        ratings.addFileToHashMap("song2.mp3");
-
-        ratings.dislikeSong("song1.mp3");
-        ratings.dislikeSong("song2.mp3");
-
-        // If all songs are disliked, should return true
+    void checkForLikedRatings_shouldReturnTrueWhenAllDisliked() {
+        ratings.addFileToHashMap(TEST_SONG);
+        ratings.dislikeSong(TEST_SONG);
         assertTrue(ratings.checkForLikedRatings());
     }
 
     @Test
-    public void testResetAllRatings() {
-        ratings.addFileToHashMap("song1.mp3");
-        ratings.addFileToHashMap("song2.mp3");
+    void getSongStatus_shouldReturnTrueForUnknownSong() {
+        assertTrue(ratings.getSongStatus("unknown_song.mp3"));
+    }
 
-        ratings.dislikeSong("song1.mp3");
-        ratings.dislikeSong("song2.mp3");
-
+    @Test
+    void resetAllRatings_shouldSetAllSongsToLiked() {
+        ratings.addFileToHashMap(TEST_SONG);
+        ratings.dislikeSong(TEST_SONG);
         ratings.resetAllRatings();
-
-        assertTrue(ratings.getSongStatus("song1.mp3"));
-        assertTrue(ratings.getSongStatus("song2.mp3"));
+        assertTrue(ratings.getSongStatus(TEST_SONG));
     }
 }

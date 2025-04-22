@@ -3,17 +3,18 @@ package org.example;
 import javax.sound.sampled.*;
 import java.io.File;
 import java.io.IOException;
-import javazoom.spi.mpeg.sampled.file.MpegAudioFileReader;
 
 //Handles MP3 audio playback using JavaSound API
-public class AudioPlaybackController {
+public class AudioPlaybackController implements InterfacePlaybackController {
     private Clip clip;
     private boolean manualStop;
     private Runnable playbackCompleteCallback;
     private final LineListener endListener;
+    private final InterfaceAudioFileConverter audioFileConverter;
 
-    //Callbacks to notify when playback completes
-    public AudioPlaybackController() {
+    // Dependency injection for the audio file reader factory
+    public AudioPlaybackController(InterfaceAudioFileConverter audioFileConverter) {
+        this.audioFileConverter = audioFileConverter;
         this.endListener = event -> {
             System.out.println("Line event: " + event.getType());
 
@@ -40,11 +41,13 @@ public class AudioPlaybackController {
         };
     }
 
+    @Override
     public void setOnPlaybackComplete(Runnable callback) {
         this.playbackCompleteCallback = callback;
         System.out.println("Playback complete callback set");
     }
 
+    @Override
     public void loadAudio(String filePath) throws UnsupportedAudioFileException, IOException, LineUnavailableException {
         System.out.println("Loading audio: " + filePath);
 
@@ -53,8 +56,8 @@ public class AudioPlaybackController {
             clip.close();
         }
 
-        // MP3-specific audio loading
-        try (AudioInputStream audioStream = new MpegAudioFileReader().getAudioInputStream(new File(filePath))) {
+        // Using the injected converter to get the appropriate audio stream
+        try (AudioInputStream audioStream = audioFileConverter.getAudioInputStream(new File(filePath))) {
             AudioFormat baseFormat = audioStream.getFormat();
 
             //format for PCM conversion
@@ -67,7 +70,7 @@ public class AudioPlaybackController {
                     baseFormat.getSampleRate(),
                     false);
 
-            // Convert MP3 to PCM format
+            // Convert to PCM format
             AudioInputStream decodedStream = AudioSystem.getAudioInputStream(decodedFormat, audioStream);
 
             clip = AudioSystem.getClip();
@@ -78,6 +81,7 @@ public class AudioPlaybackController {
         }
     }
 
+    @Override
     public void startPlayback() {
         if (clip != null) {
             manualStop = false;
@@ -86,6 +90,7 @@ public class AudioPlaybackController {
         }
     }
 
+    @Override
     public void stopPlayback() {
         if (clip != null) {
             manualStop = true;
@@ -94,6 +99,7 @@ public class AudioPlaybackController {
         }
     }
 
+    @Override
     public void reset() {
         if (clip != null) {
             System.out.println("Resetting playback position to beginning");
@@ -101,6 +107,7 @@ public class AudioPlaybackController {
         }
     }
 
+    @Override
     public void close() {
         if (clip != null) {
             clip.close();
