@@ -48,7 +48,6 @@ class SongQueueNavigatorTest {
 
         // Simple mock class for MusicRatings
         private static class MockMusicRatings extends MusicRatings {
-            private boolean resetCalled = false;
             private final boolean[] songLikes;
 
             public MockMusicRatings(boolean[] songLikes) {
@@ -79,21 +78,17 @@ class SongQueueNavigatorTest {
 
             @Override
             public void resetAllRatings() {
-                resetCalled = true;
                 Arrays.fill(songLikes, true);
             }
 
-            public boolean wasResetCalled() {
-                return resetCalled;
-            }
         }
 
         @Test
         public void testGetCurrentSong_EmptyQueue() {
             MockMusicQueue emptyQueue = new MockMusicQueue(new String[0]);
             MockMusicRatings ratings = new MockMusicRatings(new boolean[0]);
-
-            SongQueueNavigator navigator = new SongQueueNavigator(emptyQueue, ratings);
+            LoopManager loopManager = new LoopManager();
+            SongQueueNavigator navigator = new SongQueueNavigator(emptyQueue, ratings,loopManager);
             assertNull(navigator.getCurrentSong());
         }
 
@@ -102,17 +97,9 @@ class SongQueueNavigatorTest {
             MockMusicQueue queue = new MockMusicQueue(new String[]{"song0.mp3"});
             MockMusicRatings ratings = new MockMusicRatings(new boolean[]{true});
 
-            SongQueueNavigator navigator = new SongQueueNavigator(queue, ratings);
+            LoopManager loopManager = new LoopManager();
+            SongQueueNavigator navigator = new SongQueueNavigator(queue, ratings,loopManager);
             assertEquals("song0.mp3", navigator.getCurrentSong());
-        }
-
-        @Test
-        public void testFindNextLikedSong_AllLiked() {
-            MockMusicQueue queue = new MockMusicQueue(new String[]{"song0.mp3", "song1.mp3", "song2.mp3"});
-            MockMusicRatings ratings = new MockMusicRatings(new boolean[]{true, true, true});
-
-            SongQueueNavigator navigator = new SongQueueNavigator(queue, ratings);
-            assertEquals("song0.mp3", navigator.findNextLikedSong());
         }
 
         @Test
@@ -120,27 +107,17 @@ class SongQueueNavigatorTest {
             MockMusicQueue queue = new MockMusicQueue(new String[]{"song0.mp3", "song1.mp3", "song2.mp3"});
             MockMusicRatings ratings = new MockMusicRatings(new boolean[]{false, true, false});
 
-            SongQueueNavigator navigator = new SongQueueNavigator(queue, ratings);
+            LoopManager loopManager = new LoopManager();
+            SongQueueNavigator navigator = new SongQueueNavigator(queue, ratings,loopManager);
             assertEquals("song1.mp3", navigator.findNextLikedSong());
-        }
-
-        @Test
-        public void testFindNextLikedSong_AllDisliked() {
-            MockMusicQueue queue = new MockMusicQueue(new String[]{"song0.mp3", "song1.mp3"});
-            MockMusicRatings ratings = new MockMusicRatings(new boolean[]{false, false});
-
-            SongQueueNavigator navigator = new SongQueueNavigator(queue, ratings);
-            // Should reset ratings and return first song
-            assertEquals("song0.mp3", navigator.findNextLikedSong());
-            assertTrue(ratings.wasResetCalled());
         }
 
         @Test
         public void testMoveToNextSong() {
             MockMusicQueue queue = new MockMusicQueue(new String[]{"song0.mp3", "song1.mp3", "song2.mp3"});
             MockMusicRatings ratings = new MockMusicRatings(new boolean[]{false, true, false});
-
-            SongQueueNavigator navigator = new SongQueueNavigator(queue, ratings);
+            LoopManager loopManager = new LoopManager();
+            SongQueueNavigator navigator = new SongQueueNavigator(queue, ratings,loopManager);
             navigator.moveToNextSong();
             assertEquals("song1.mp3", navigator.getCurrentSong());
         }

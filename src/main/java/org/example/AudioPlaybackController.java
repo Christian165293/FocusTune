@@ -1,10 +1,9 @@
 package org.example;
 
-import javazoom.spi.mpeg.sampled.file.MpegAudioFileReader;
-
 import javax.sound.sampled.*;
 import java.io.File;
 import java.io.IOException;
+import javazoom.spi.mpeg.sampled.file.MpegAudioFileReader;
 
 //Handles MP3 audio playback using JavaSound API
 public class AudioPlaybackController {
@@ -16,22 +15,39 @@ public class AudioPlaybackController {
     //Callbacks to notify when playback completes
     public AudioPlaybackController() {
         this.endListener = event -> {
-            if (event.getType() == LineEvent.Type.STOP &&
-                    !manualStop && clip != null &&
-                    clip.getMicrosecondPosition() >= clip.getMicrosecondLength()) {
-                if (playbackCompleteCallback != null) {
-                    playbackCompleteCallback.run();
+            System.out.println("Line event: " + event.getType());
+
+            if (event.getType() == LineEvent.Type.STOP) {
+                System.out.println("Stop event detected. manualStop=" + manualStop);
+                if (clip != null) {
+                    System.out.println("Position: " + clip.getMicrosecondPosition() +
+                            ", Length: " + clip.getMicrosecondLength());
+                }
+
+                if (!manualStop && clip != null &&
+                        clip.getMicrosecondPosition() >= clip.getMicrosecondLength() - 1000000) { // Allow 1 second tolerance
+                    System.out.println("End of track detected, calling completion callback");
+                    if (playbackCompleteCallback != null) {
+                        playbackCompleteCallback.run();
+                    }
                 }
             }
-            manualStop = false;
+
+            // Only reset manualStop after processing stop events
+            if (event.getType() == LineEvent.Type.STOP) {
+                manualStop = false;
+            }
         };
     }
 
     public void setOnPlaybackComplete(Runnable callback) {
         this.playbackCompleteCallback = callback;
+        System.out.println("Playback complete callback set");
     }
 
     public void loadAudio(String filePath) throws UnsupportedAudioFileException, IOException, LineUnavailableException {
+        System.out.println("Loading audio: " + filePath);
+
         if (clip != null) {
             clip.removeLineListener(endListener);
             clip.close();
@@ -57,12 +73,15 @@ public class AudioPlaybackController {
             clip = AudioSystem.getClip();
             clip.open(decodedStream);
             clip.addLineListener(endListener);
+
+            System.out.println("Audio loaded successfully, duration: " + clip.getMicrosecondLength() / 1000000.0 + " seconds");
         }
     }
 
     public void startPlayback() {
         if (clip != null) {
             manualStop = false;
+            System.out.println("Starting playback");
             clip.start();
         }
     }
@@ -70,12 +89,14 @@ public class AudioPlaybackController {
     public void stopPlayback() {
         if (clip != null) {
             manualStop = true;
+            System.out.println("Stopping playback (manual)");
             clip.stop();
         }
     }
 
     public void reset() {
         if (clip != null) {
+            System.out.println("Resetting playback position to beginning");
             clip.setMicrosecondPosition(0);
         }
     }

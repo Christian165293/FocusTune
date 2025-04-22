@@ -16,13 +16,15 @@ public class Main {
 
         // Initialize specialized components
         AudioPlaybackController playbackController = new AudioPlaybackController();
-        SongQueueNavigator queueNavigator = new SongQueueNavigator(musicQueue, musicRatings);
         LoopManager loopManager = new LoopManager();
+        SongQueueNavigator queueNavigator = new SongQueueNavigator(musicQueue, musicRatings, loopManager);
         AlarmPlayer alarmPlayer = new AlarmPlayer();
 
         // Set up the playback controller with queue navigator
         playbackController.setOnPlaybackComplete(() -> {
+            System.out.println("Playback complete callback triggered");
             if (!loopManager.isLoopEnabled()) {
+                System.out.println("Loop not enabled, moving to next song");
                 queueNavigator.moveToNextSong();
                 try {
                     playbackController.loadAudio(queueNavigator.getCurrentSong());
@@ -31,6 +33,7 @@ public class Main {
                     System.err.println("Error moving to next song: " + e.getMessage());
                 }
             } else {
+                System.out.println("Loop enabled, replaying current song");
                 playbackController.reset();
                 playbackController.startPlayback();
             }

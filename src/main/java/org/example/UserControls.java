@@ -85,9 +85,11 @@ public class UserControls extends JFrame {
         if (loopManager.isLoopEnabled()) {
             loopManager.disableLoop();
             ui.getLoopButton().setText("Loop Music");
+            System.out.println("Loop disabled");
         } else {
             loopManager.enableLoop();
             ui.getLoopButton().setText("Undo Loop");
+            System.out.println("Loop enabled");
         }
     }
 
