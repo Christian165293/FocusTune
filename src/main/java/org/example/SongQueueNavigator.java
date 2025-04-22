@@ -1,5 +1,6 @@
 package org.example;
 
+//Manages navigation through the MusicQueue
 public class SongQueueNavigator {
     private final MusicQueue musicQueue;
     private final MusicRatings musicRatings;
@@ -16,7 +17,9 @@ public class SongQueueNavigator {
         return currentSong;
     }
 
+    //Skips disliked songs when navigating
     public String findNextLikedSong() {
+        //Resets all ratings if all songs become disliked
         if (musicRatings.checkForLikedRatings()) {
             musicRatings.resetAllRatings();
             if (musicQueue.isEmpty()) return null;

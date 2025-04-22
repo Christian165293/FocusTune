@@ -1,5 +1,6 @@
 package org.example;
 
+//Simple controller for the loop functionality (on/off)
 public class LoopManager {
     private boolean loopEnabled = false;
 

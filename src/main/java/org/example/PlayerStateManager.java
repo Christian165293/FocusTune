@@ -1,5 +1,6 @@
 package org.example;
 
+//Tracks whether music is currently playing
 public class PlayerStateManager {
     private boolean isPlaying = false;
 

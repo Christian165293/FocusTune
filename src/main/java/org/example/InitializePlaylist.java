@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
 
+//Populates the MusicQueue by reading MP3 files from a directory
 public class InitializePlaylist {
     public static void fillMusicQueue(MusicQueue musicQueueInput, MusicRatings musicRatingsInput) {
         Path projectRoot = Paths.get(System.getProperty("user.dir"));

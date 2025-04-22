@@ -1,5 +1,6 @@
 package org.example;
 
+//Implements a countdown timer with callbacks
 public class TimerService {
     private final javax.swing.Timer timer;
     private int remainingSeconds;
@@ -12,6 +13,7 @@ public class TimerService {
         void onTimerComplete();
     }
 
+    //Notifies listeners on timer ticks and completion
     public TimerService(TimerListener listener) {
         this.listener = listener;
         this.timer = new javax.swing.Timer(1000, _ -> {

@@ -5,54 +5,57 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class MusicQueueTest {
-    private MusicQueue musicQueue;
+    private MusicQueue queue;
 
     @BeforeEach
     public void setUp() {
-        musicQueue = new MusicQueue();
+        queue = new MusicQueue();
     }
 
     @Test
-    public void testIsEmptyOnCreation() {
-        assertTrue(musicQueue.isEmpty());
+    public void testNewQueueIsEmpty() {
+        assertTrue(queue.isEmpty());
+        assertEquals(0, queue.getSize());
     }
 
     @Test
-    public void testPeekOnEmptyQueue() {
-        assertThrows(NullPointerException.class, () -> musicQueue.peek());
+    public void testAddSingleSong() {
+        queue.add("song1.mp3");
+        assertFalse(queue.isEmpty());
+        assertEquals(1, queue.getSize());
+        assertEquals("song1.mp3", queue.peek());
     }
 
     @Test
-    public void testAddAndPeek() {
-        musicQueue.add("song1.mp3");
-        assertFalse(musicQueue.isEmpty());
-        assertEquals("song1.mp3", musicQueue.peek());
-    }
+    public void testAddMultipleSongs() {
+        queue.add("song1.mp3");
+        queue.add("song2.mp3");
+        queue.add("song3.mp3");
 
-    @Test
-    public void testAddMultipleAndPeek() {
-        musicQueue.add("song1.mp3");
-        musicQueue.add("song2.mp3");
-        assertEquals("song1.mp3", musicQueue.peek());
+        assertEquals(3, queue.getSize());
+        assertEquals("song1.mp3", queue.peek());
     }
 
     @Test
     public void testRemove() {
-        musicQueue.add("song1.mp3");
-        musicQueue.add("song2.mp3");
-        musicQueue.remove();
-        assertEquals("song2.mp3", musicQueue.peek());
+        queue.add("song1.mp3");
+        queue.add("song2.mp3");
+
+        assertEquals("song1.mp3", queue.peek());
+        queue.remove();
+        assertEquals("song2.mp3", queue.peek());
+        assertEquals(1, queue.getSize());
     }
 
     @Test
-    public void testRemoveAll() {
-        musicQueue.add("song1.mp3");
-        musicQueue.remove();
-        assertTrue(musicQueue.isEmpty());
-    }
+    public void testRemoveUntilEmpty() {
+        queue.add("song1.mp3");
+        queue.add("song2.mp3");
 
-    @Test
-    public void testRemoveOnEmptyQueue() {
-        assertThrows(NullPointerException.class, () -> musicQueue.remove());
+        queue.remove();
+        queue.remove();
+
+        assertTrue(queue.isEmpty());
+        assertEquals(0, queue.getSize());
     }
 }

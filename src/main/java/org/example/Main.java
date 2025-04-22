@@ -1,5 +1,6 @@
 package org.example;
 
+//Program entry point that initializes all components and starts the application
 public class Main {
     public static void main(String[] args) {
         // Initialize components

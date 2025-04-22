@@ -3,6 +3,7 @@ package org.example;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 
+//UserControls handles action events
 public class UserControls extends JFrame {
     private final AudioPlaybackController playbackController;
     private final SongQueueNavigator queueNavigator;

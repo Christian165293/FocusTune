@@ -3,6 +3,7 @@ package org.example;
 import javax.swing.*;
 import java.awt.*;
 
+//UserInterface handles the visual components and styling
 public class UserInterface {
     private final JLabel timerLabel;
     private final JTextField timeInput;

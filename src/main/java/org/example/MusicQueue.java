@@ -1,5 +1,6 @@
 package org.example;
 
+//Queue that stores file paths to songs
 public class MusicQueue {
     private static class Node {
         private final String data; // Value stored in the node

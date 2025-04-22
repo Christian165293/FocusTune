@@ -2,6 +2,7 @@ package org.example;
 
 import java.util.HashMap;
 
+//Maintains a HashMap mapping song paths to boolean values (liked/disliked)
 public class MusicRatings {
     private final HashMap<String, Boolean> ratings = new HashMap<>();    // Song path → liked (true/false)
 

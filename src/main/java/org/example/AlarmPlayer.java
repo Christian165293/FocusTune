@@ -4,6 +4,7 @@ import javazoom.jl.player.Player;
 
 import java.io.FileInputStream;
 
+//Class to play an alarm sound when the timer completes
 public class AlarmPlayer {
     public void playAlarm() {
         try {

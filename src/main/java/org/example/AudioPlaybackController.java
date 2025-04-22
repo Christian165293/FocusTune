@@ -6,12 +6,14 @@ import javax.sound.sampled.*;
 import java.io.File;
 import java.io.IOException;
 
+//Handles MP3 audio playback using JavaSound API
 public class AudioPlaybackController {
     private Clip clip;
     private boolean manualStop;
     private Runnable playbackCompleteCallback;
     private final LineListener endListener;
 
+    //Callbacks to notify when playback completes
     public AudioPlaybackController() {
         this.endListener = event -> {
             if (event.getType() == LineEvent.Type.STOP &&
