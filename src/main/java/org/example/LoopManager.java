@@ -12,6 +12,7 @@ public class LoopManager {
         loopEnabled = false;
     }
 
+    //Checks if the loop feature is currently enabled
     public boolean isLoopEnabled() {
         return loopEnabled;
     }

@@ -1,7 +1,7 @@
 package org.example;
 
-//Queue that stores file paths to songs
-public class MusicQueue implements InterfaceMusicQueue{
+//Queue created using linked list that stores file paths to songs
+public class MusicQueue implements InterfaceMusicQueue {
     private static class Node {
         private final String data; // Value stored in the node
         private Node next; // Pointer to the next node

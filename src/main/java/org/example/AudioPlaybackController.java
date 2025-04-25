@@ -5,16 +5,18 @@ import java.io.File;
 import java.io.IOException;
 
 //Handles MP3 audio playback using JavaSound API
+//Manages loading, playing, stopping and monitoring audio files
 public class AudioPlaybackController implements InterfacePlaybackController {
-    private Clip clip;
-    private boolean manualStop;
-    private Runnable playbackCompleteCallback;
-    private final LineListener endListener;
-    private final InterfaceAudioFileConverter audioFileConverter;
+    private Clip clip;// the audio clip being played
+    private boolean manualStop;//Flag which indicated if the audio was manually stopped
+    private Runnable playbackCompleteCallback;//Callback to run when playback is completed
+    private final LineListener endListener;//Listener to listen for the start and stop of an audio event
+    private final InterfaceAudioFileConverter audioFileConverter;//the audio file conversion
 
-    // Dependency injection for the audio file reader factory
+    // Constructor for converting the audio files
     public AudioPlaybackController(InterfaceAudioFileConverter audioFileConverter) {
         this.audioFileConverter = audioFileConverter;
+        //creation of the listener
         this.endListener = event -> {
             System.out.println("Line event: " + event.getType());
 
@@ -24,9 +26,9 @@ public class AudioPlaybackController implements InterfacePlaybackController {
                     System.out.println("Position: " + clip.getMicrosecondPosition() +
                             ", Length: " + clip.getMicrosecondLength());
                 }
-
+//determining if playback stopped naturally or by user, allows 1 second of tolerance
                 if (!manualStop && clip != null &&
-                        clip.getMicrosecondPosition() >= clip.getMicrosecondLength() - 1000000) { // Allow 1 second tolerance
+                        clip.getMicrosecondPosition() >= clip.getMicrosecondLength() - 1000000) {
                     System.out.println("End of track detected, calling completion callback");
                     if (playbackCompleteCallback != null) {
                         playbackCompleteCallback.run();
@@ -41,26 +43,28 @@ public class AudioPlaybackController implements InterfacePlaybackController {
         };
     }
 
+    //sets the callback function to be called when the playback is completed naturally
     @Override
     public void setOnPlaybackComplete(Runnable callback) {
         this.playbackCompleteCallback = callback;
         System.out.println("Playback complete callback set");
     }
 
+    //load next audio file for playback and coverts the file to correct format
     @Override
     public void loadAudio(String filePath) throws UnsupportedAudioFileException, IOException, LineUnavailableException {
         System.out.println("Loading audio: " + filePath);
-
+//clean up existing audio clip
         if (clip != null) {
             clip.removeLineListener(endListener);
             clip.close();
         }
 
-        // Using the injected converter to get the appropriate audio stream
+        // convert the audio to playable stream using converter
         try (AudioInputStream audioStream = audioFileConverter.getAudioInputStream(new File(filePath))) {
             AudioFormat baseFormat = audioStream.getFormat();
 
-            //format for PCM conversion
+            //format for PCM conversion which is used by Java Sound API
             AudioFormat decodedFormat = new AudioFormat(
                     AudioFormat.Encoding.PCM_SIGNED,
                     baseFormat.getSampleRate(),
@@ -73,6 +77,7 @@ public class AudioPlaybackController implements InterfacePlaybackController {
             // Convert to PCM format
             AudioInputStream decodedStream = AudioSystem.getAudioInputStream(decodedFormat, audioStream);
 
+            //create and prepare the actual audio clip
             clip = AudioSystem.getClip();
             clip.open(decodedStream);
             clip.addLineListener(endListener);
@@ -81,6 +86,7 @@ public class AudioPlaybackController implements InterfacePlaybackController {
         }
     }
 
+    //start playing next loaded audio
     @Override
     public void startPlayback() {
         if (clip != null) {
@@ -90,6 +96,7 @@ public class AudioPlaybackController implements InterfacePlaybackController {
         }
     }
 
+    //stop the audio playback
     @Override
     public void stopPlayback() {
         if (clip != null) {
@@ -99,6 +106,7 @@ public class AudioPlaybackController implements InterfacePlaybackController {
         }
     }
 
+    //reset the current clips audio position to beginning which resets song
     @Override
     public void reset() {
         if (clip != null) {
@@ -107,6 +115,7 @@ public class AudioPlaybackController implements InterfacePlaybackController {
         }
     }
 
+    //stops all the current resources which are associated with the audio playback
     @Override
     public void close() {
         if (clip != null) {
